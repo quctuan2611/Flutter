@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/article_model.dart';
 import '../services/news_service.dart';
 
-// ==========================================
-// MÀN HÌNH 1: DANH SÁCH TIN TỨC
-// ==========================================
+
 class NewsListPage extends StatefulWidget {
   const NewsListPage({super.key});
 
@@ -50,7 +48,7 @@ class _NewsListPageState extends State<NewsListPage> {
     );
   }
 
-  // --- ĐÂY LÀ ĐOẠN CODE ĐÃ SỬA LỖI TRÀN VIỀN VÀ LỖI ẢNH ---
+  
   Widget _buildNewsCard(BuildContext context, Article article) {
     return GestureDetector(
       onTap: () {
@@ -94,7 +92,7 @@ class _NewsListPageState extends State<NewsListPage> {
             ),
             const SizedBox(width: 12),
             
-            // 2. Nội dung text (Dùng Expanded để chống lỗi vạch vàng/overflow)
+            // 2. Nội dung text 
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,9 +120,7 @@ class _NewsListPageState extends State<NewsListPage> {
   }
 }
 
-// ==========================================
-// MÀN HÌNH 2: CHI TIẾT BÀI BÁO
-// ==========================================
+
 class NewsDetailPage extends StatelessWidget {
   final Article article;
   const NewsDetailPage({super.key, required this.article});

@@ -10,7 +10,8 @@ class LoginProfileScreen extends StatefulWidget {
 }
 
 class _LoginProfileScreenState extends State<LoginProfileScreen> {
-  final _userController = TextEditingController(text: 'emilys');
+  // 1. KHỞI TẠO CÁC ĐIỀU KHIỂN VÀ DỮ LIỆU
+  final _userController = TextEditingController(text: 'emilys'); 
   final _passController = TextEditingController(text: 'emilyspass');
   final AuthService _authService = AuthService();
 
@@ -18,6 +19,7 @@ class _LoginProfileScreenState extends State<LoginProfileScreen> {
   bool _isLoading = false;
   String _errorMessage = '';
 
+  // 2. LOGIC XỬ LÝ ĐĂNG NHẬP
   void _onLogin() async {
     setState(() {
       _isLoading = true;
@@ -40,88 +42,233 @@ class _LoginProfileScreenState extends State<LoginProfileScreen> {
     }
   }
 
+  // LOGIC ĐĂNG XUẤT
+  void _onLogout() {
+    setState(() {
+      _user = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA), 
       appBar: AppBar(
-        title: Text(_user == null ? "Đăng Nhập" : "Hồ Sơ"),
+        title: Text(_user == null ? "Đăng Nhập" : "Hồ Sơ Chi Tiết"),
+        centerTitle: true,
         backgroundColor: Colors.blueAccent,
+        elevation: 0,
         actions: [
           if (_user != null)
-            IconButton(onPressed: () => setState(() => _user = null), icon: const Icon(Icons.logout))
+            IconButton(onPressed: _onLogout, icon: const Icon(Icons.logout, color: Colors.white))
         ],
       ),
       body: _user == null ? _buildLoginForm() : _buildProfileView(),
     );
   }
 
-  // --- UI FORM ĐĂNG NHẬP ---
+  // ==========================================
+  // UI 1: FORM ĐĂNG NHẬP
+  // ==========================================
   Widget _buildLoginForm() {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const Icon(Icons.lock_person, size: 80, color: Colors.blueAccent),
+            const Icon(Icons.lock_person_rounded, size: 100, color: Colors.blueAccent),
             const SizedBox(height: 30),
             TextField(
               controller: _userController,
-              decoration: const InputDecoration(labelText: 'Tài khoản', border: OutlineInputBorder()),
+              decoration: InputDecoration(
+                labelText: 'Tài khoản',
+                prefixIcon: const Icon(Icons.person),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+              ),
             ),
             const SizedBox(height: 15),
             TextField(
               controller: _passController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Mật khẩu', border: OutlineInputBorder()),
+              decoration: InputDecoration(
+                labelText: 'Mật khẩu',
+                prefixIcon: const Icon(Icons.lock),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+              ),
             ),
             const SizedBox(height: 25),
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 55,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _onLogin,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
-                child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text("ĐĂNG NHẬP", style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                child: _isLoading 
+                  ? const CircularProgressIndicator(color: Colors.white) 
+                  : const Text("ĐĂNG NHẬP", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
-            if (_errorMessage.isNotEmpty) Text(_errorMessage, style: const TextStyle(color: Colors.red)),
+            if (_errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 15),
+                child: Text(_errorMessage, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w500)),
+              ),
           ],
         ),
       ),
     );
   }
 
-  // --- UI THÔNG TIN CÁ NHÂN ---
+  // ==========================================
+  // UI 2: HỒ SƠ CÁ NHÂN (Đầy đủ thông tin)
+  // ==========================================
   Widget _buildProfileView() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          CircleAvatar(radius: 60, backgroundImage: NetworkImage(_user!.image)),
-          const SizedBox(height: 10),
-          Text("${_user!.firstName} ${_user!.lastName}", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 20),
-          Card(
+          // HEADER VỚI GRADIENT VÀ AVATAR
+          Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                height: 160,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blueAccent, Colors.indigo],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(40),
+                    bottomRight: Radius.circular(40),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 100,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.white,
+                    backgroundImage: NetworkImage(_user!.image),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 70),
+
+          // TÊN VÀ USERNAME
+          Text(
+            "${_user!.firstName} ${_user!.lastName}",
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            "@${_user!.username}",
+            style: TextStyle(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
+          ),
+          const SizedBox(height: 25),
+
+          // DANH SÁCH THÔNG TIN CHI TIẾT THEO TỪNG NHÓM
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _infoTile(Icons.email, "Email", _user!.email),
-                _infoTile(Icons.phone, "SĐT", _user!.phone),
-                _infoTile(Icons.location_city, "Thành phố", _user!.city),
-                _infoTile(Icons.work, "Công việc", _user!.jobTitle),
-                _infoTile(Icons.school, "Đại học", _user!.university),
+                // --- NHÓM 1: LIÊN HỆ ---
+                _buildSectionTitle("Thông tin liên hệ"),
+                _buildModernInfoCard(Icons.email_rounded, "Email", _user!.email),
+                _buildModernInfoCard(Icons.phone_iphone_rounded, "Số điện thoại", _user!.phone),
+                
+                const SizedBox(height: 20),
+
+                // --- NHÓM 2: CÁ NHÂN ---
+                _buildSectionTitle("Thông tin cá nhân"),
+                Row(
+                  children: [
+                    Expanded(child: _buildModernInfoCard(Icons.cake_rounded, "Ngày sinh", _user!.birthDate)),
+                    const SizedBox(width: 10),
+                    Expanded(child: _buildModernInfoCard(Icons.transgender_rounded, "Giới tính", _user!.gender)),
+                  ],
+                ),
+                _buildModernInfoCard(Icons.location_on_rounded, "Địa chỉ", "${_user!.address}, ${_user!.city}"),
+
+                const SizedBox(height: 20),
+
+                // --- NHÓM 3: CÔNG VIỆC & HỌC VẤN ---
+                _buildSectionTitle("Công việc & Học vấn"),
+                _buildModernInfoCard(Icons.business_center_rounded, "Chức danh", _user!.jobTitle),
+                _buildModernInfoCard(Icons.apartment_rounded, "Công ty", _user!.companyName),
+                _buildModernInfoCard(Icons.school_rounded, "Đại học", _user!.university),
+
+                const SizedBox(height: 40),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _infoTile(IconData icon, String label, String value) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      subtitle: Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+  // WIDGET TIÊU ĐỀ TỪNG PHẦN
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 5, bottom: 10),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+      ),
+    );
+  }
+
+  // WIDGET THẺ THÔNG TIN HIỆN ĐẠI
+  Widget _buildModernInfoCard(IconData icon, String label, String value) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.blueAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.blueAccent, size: 22),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 2),
+                Text(
+                  value.isEmpty ? "Chưa cập nhật" : value, 
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
